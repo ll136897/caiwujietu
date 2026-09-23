@@ -1,0 +1,29 @@
+# Render Blueprint 配置（托管平台照这个自动把服务跑起来）
+# 你不用改任何东西，把它和 backend 文件夹一起传上 GitHub 即可。
+services:
+  - type: web
+    name: kaorou-finance
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # 写入令牌：手机发数据时要带的"钥匙"，保持默认即可（以后可改）
+      - key: WRITE_TOKEN
+        value: changer-secret-token
+      # 百度 OCR 识别钥匙：先留空也能跑（走无识别的录入），拿到 Key 后在面板里补
+      - key: BAIDU_API_KEY
+        sync: false
+      - key: BAIDU_SECRET_KEY
+        sync: false
+      # 账本持久化：存在你本人 GitHub 仓库的 ledger.json（永久在、归你、可导出）
+      # 格式：你的用户名/仓库名（例如 nico/kaorou-ledger）
+      - key: GITHUB_REPO
+        sync: false
+      # GitHub 私人令牌（fine-grained，仓库读写权限），在 GitHub 生成后填这里
+      - key: GITHUB_TOKEN
+        sync: false
+      # 账本文件路径，保持默认即可
+      - key: LEDGER_PATH
+        value: data/ledger.json

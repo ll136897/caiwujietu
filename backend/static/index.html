@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>我的财务看板</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>我的财务看板</h1>
+      <div class="sub" id="period">加载中…</div>
+    </header>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="section">
+      <div class="sec-head">
+        <h2>收支趋势</h2>
+        <div class="range" id="range">
+          <button data-r="daily">日</button>
+          <button data-r="weekly">周</button>
+          <button data-r="monthly" class="active">月</button>
+          <button data-r="all">全部</button>
+        </div>
+      </div>
+      <div class="chart"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <div class="section">
+      <h2>成本分类占比</h2>
+      <div id="catWrap"><div class="chart"><canvas id="catChart"></canvas></div></div>
+    </div>
+
+    <div class="section">
+      <h2>利润表（按项目）</h2>
+      <div id="pnl"></div>
+    </div>
+
+    <div class="section">
+      <h2>录入明细</h2>
+      <div id="entries"></div>
+    </div>
+
+    <div class="section">
+      <h2>导出</h2>
+      <div class="btns">
+        <a class="btn primary" id="btnExcel" href="#">导出 Excel</a>
+        <a class="btn" id="btnPdf" href="#">导出 PDF</a>
+      </div>
+    </div>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
