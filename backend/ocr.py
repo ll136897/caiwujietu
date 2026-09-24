@@ -6,6 +6,7 @@ from .config import (
     BAIDU_SECRET_KEY,
     BAIDU_TOKEN_URL,
     BAIDU_OCR_URL,
+    BAIDU_OCR_URLS,
 )
 
 _token_cache = {"token": None, "expire": 0}
