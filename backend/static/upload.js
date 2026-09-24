@@ -61,6 +61,9 @@
     let html = `<div class="r-card" data-id="${e.id}">`;
     if (thumbUrl) html += `<img class="thumb" src="${thumbUrl}" alt="" />`;
     html += `<div class="amt ${pos ? "pos" : "neg"}">${pos ? "+" : "-"}¥${Number(e.amount || 0).toFixed(2)}</div>`;
+    if (!(Number(e.amount) > 0)) {
+      html += `<div class="status bad" style="margin:0 0 10px">⚠️ 金额没认出来，请在下面「金额」里手填一下</div>`;
+    }
     FIELDS.forEach(([label, key, ph]) => {
       const t = key === "date" ? "date" : key === "time" ? "time" : key === "amount" ? "number" : "text";
       const step = key === "amount" ? ' step="0.01"' : "";
