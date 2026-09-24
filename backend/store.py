@@ -19,8 +19,8 @@ def _use_github() -> bool:
 def _sqlite_add(entry: dict):
     conn = get_conn()
     cur = conn.execute(
-        """INSERT INTO entries (ts, amount, type, category, merchant, project, date, note, unit, quantity, img_hash, created_at)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        """INSERT INTO entries (ts, amount, type, category, merchant, project, date, note, unit, quantity, img_hash, created_at, channel, item, time)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             datetime.datetime.now().isoformat(),
             float(entry.get("amount", 0) or 0),
@@ -34,6 +34,9 @@ def _sqlite_add(entry: dict):
             entry.get("quantity", ""),
             entry.get("img_hash", ""),
             datetime.datetime.now().isoformat(),
+            entry.get("channel", ""),
+            entry.get("item", ""),
+            entry.get("time", ""),
         ),
     )
     row = dict(conn.execute("SELECT * FROM entries WHERE id=?", (cur.lastrowid,)).fetchone())
@@ -100,7 +103,7 @@ def _github_update(eid, fields: dict) -> dict:
     entries, sha = _gh_get()
     for e in entries:
         if e.get("id") == eid:
-            for k in ("amount", "type", "category", "merchant", "project", "date", "unit", "quantity", "note"):
+            for k in ("amount", "type", "category", "merchant", "project", "date", "unit", "quantity", "note", "channel", "item", "time"):
                 if k in fields:
                     e[k] = fields[k]
             _gh_put(entries, sha)
@@ -120,7 +123,7 @@ def _github_delete(eid) -> bool:
 def _sqlite_update(eid, fields: dict) -> dict:
     cols = []
     vals = []
-    for k in ("amount", "type", "category", "merchant", "project", "date", "unit", "quantity", "note"):
+    for k in ("amount", "type", "category", "merchant", "project", "date", "unit", "quantity", "note", "channel", "item", "time"):
         if k in fields:
             cols.append(f"{k}=?")
             val = fields[k]

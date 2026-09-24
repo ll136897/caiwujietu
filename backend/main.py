@@ -57,6 +57,12 @@ def index():
     return FileResponse(str(STATIC / "index.html"))
 
 
+@app.get("/upload")
+def upload_page():
+    """手机上传页：拍照 / 从相册选图 → 识别支出渠道·时间·类别·名称·数量 → 入账，结果可改"""
+    return FileResponse(str(STATIC / "upload.html"))
+
+
 @app.post("/api/ocr")
 async def api_ocr(req: Request, file: UploadFile = File(None)):
     _check_token(req)
@@ -99,6 +105,9 @@ async def api_add_entry(req: Request):
         "quantity": body.get("quantity", ""),
         "note": body.get("note", ""),
         "img_hash": body.get("img_hash", ""),
+        "channel": body.get("channel", ""),
+        "item": body.get("item", ""),
+        "time": body.get("time", ""),
     }
     store.add_entry(entry)
     return {"ok": True}
@@ -153,15 +162,20 @@ async def api_capture(req: Request, file: UploadFile = File(None)):
         "type": suggestion.get("type", "收入"),
         "category": suggestion.get("category", ""),
         "merchant": suggestion.get("merchant", ""),
-        "project": suggestion.get("project", "其他"),
+        # 项目靠截图文字猜不准，允许上传时显式指定（?project=烤肉店）
+        "project": (req.query_params.get("project") or "").strip() or suggestion.get("project", "其他"),
         "date": suggestion.get("date", "") or datetime.date.today().isoformat(),
         "unit": suggestion.get("unit", ""),
         "quantity": suggestion.get("quantity", ""),
         "note": suggestion.get("note", ""),
         "img_hash": suggestion.get("img_hash", ""),
+        "channel": suggestion.get("channel", ""),
+        "item": suggestion.get("item", ""),
+        "time": suggestion.get("time", ""),
     }
     saved = store.add_entry(entry)
-    return {"ok": True, "entry": saved, "suggestion": suggestion}
+    # 把 OCR 原文一并返回，手机上传页可展开核对"它到底看到了什么"
+    return {"ok": True, "entry": saved, "suggestion": suggestion, "text": text}
 
 
 @app.get("/api/reports/daily")

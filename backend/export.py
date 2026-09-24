@@ -23,21 +23,22 @@ def export_excel():
     wb = Workbook()
     ws = wb.active
     ws.title = "明细"
-    headers = ["ID", "日期", "类型", "分类", "项目", "金额", "单位", "数量", "商户/对方", "备注"]
+    headers = ["ID", "日期", "时间", "类型", "渠道", "分类", "名称", "项目", "金额", "单位", "数量", "商户/对方", "备注"]
     ws.append(headers)
     for c in ws[1]:
         c.font = Font(bold=True)
     for r in rows:
         ws.append([
-            r.get("id"), r.get("date"), r.get("type"), r.get("category"),
-            r.get("project"), r.get("amount"), r.get("unit", ""), r.get("quantity", ""),
+            r.get("id"), r.get("date"), r.get("time", ""), r.get("type"), r.get("channel", ""),
+            r.get("category"), r.get("item", ""), r.get("project"), r.get("amount"),
+            r.get("unit", ""), r.get("quantity", ""),
             r.get("merchant", ""), r.get("note", ""),
         ])
 
     ws2 = wb.create_sheet("月度总览")
     ws2.append(["月份", "收入", "成本", "净额", "笔数"])
     for m in monthly():
-        ws2.append([m["month"], m["income"], m["expense"], m["net"], m["count"]])
+        ws2.append([m.get("key", ""), m["income"], m["expense"], m["net"], m["count"]])
 
     ws3 = wb.create_sheet("利润表(按项目)")
     ws3.append(["项目", "收入", "成本", "利润", "笔数"])
@@ -72,7 +73,7 @@ def export_pdf():
     pdf.cell(0, 8, "月度总览", 0, 1, "L")
     pdf.set_font(pdf._f, "", 9)
     for m in monthly():
-        line = f"{m['month']}   收入 {m['income']}   成本 {m['expense']}   净额 {m['net']}   笔数 {m['count']}"
+        line = f"{m.get('key','')}   收入 {m['income']}   成本 {m['expense']}   净额 {m['net']}   笔数 {m['count']}"
         pdf.cell(0, 6, _san(line) if not use_cn else line, 0, 1)
     pdf.ln(2)
     pdf.set_font(pdf._f, "", 10)

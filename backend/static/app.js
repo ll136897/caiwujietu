@@ -136,11 +136,12 @@ function renderPnl(pnl) {
 function renderEntries(entries) {
   const box = document.getElementById("entries");
   if (!entries.length) { box.innerHTML = '<div class="empty">还没有记账。iPhone 截屏后会自动进来。</div>'; return; }
-  let html = `<table><thead><tr><th>日期</th><th>类型</th><th>分类/项目</th><th class="amt">金额</th><th></th></tr></thead><tbody>`;
+  let html = `<table><thead><tr><th>日期</th><th>类型</th><th>渠道</th><th>类别/项目/名称</th><th class="amt">金额</th><th></th></tr></thead><tbody>`;
   entries.slice(0, 50).forEach(e => {
     const cls = e.type === "收入" ? "pos" : "neg";
     const uq = (e.quantity && e.unit) ? ` <span style="color:var(--muted);font-size:11px">${e.quantity}${e.unit}</span>` : "";
-    html += `<tr data-id="${e.id}"><td>${e.date || ""}</td><td class="${cls}">${e.type}</td><td><span class="tag">${e.category}</span>${e.project}${uq}<br><span style="color:var(--muted);font-size:11px">${e.merchant || ""}</span></td><td class="amt ${cls}">${fmt(e.amount)}</td><td><button class="row-edit" data-id="${e.id}">改</button></td></tr>`;
+    const sub = [e.item, e.merchant].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(" · ");
+    html += `<tr data-id="${e.id}"><td>${e.date || ""}${e.time ? `<br><span style="color:var(--muted);font-size:11px">${e.time}</span>` : ""}</td><td class="${cls}">${e.type}</td><td>${e.channel || "-"}</td><td><span class="tag">${e.category}</span>${e.project}${uq}<br><span style="color:var(--muted);font-size:11px">${sub}</span></td><td class="amt ${cls}">${fmt(e.amount)}</td><td><button class="row-edit" data-id="${e.id}">改</button></td></tr>`;
   });
   html += "</tbody></table>";
   box.innerHTML = html;
@@ -154,8 +155,11 @@ function openEdit(id, entries) {
   EDIT_ID = id;
   document.getElementById("f_date").value = e.date || "";
   document.getElementById("f_type").value = e.type || "收入";
+  document.getElementById("f_channel").value = e.channel || "";
   document.getElementById("f_category").value = e.category || "";
+  document.getElementById("f_item").value = e.item || "";
   document.getElementById("f_project").value = e.project || "";
+  document.getElementById("f_time").value = e.time || "";
   document.getElementById("f_amount").value = e.amount || 0;
   document.getElementById("f_unit").value = e.unit || "";
   document.getElementById("f_quantity").value = e.quantity || "";
@@ -168,8 +172,11 @@ async function saveEdit() {
   const fields = {
     date: document.getElementById("f_date").value,
     type: document.getElementById("f_type").value,
+    channel: document.getElementById("f_channel").value,
     category: document.getElementById("f_category").value,
+    item: document.getElementById("f_item").value,
     project: document.getElementById("f_project").value,
+    time: document.getElementById("f_time").value,
     amount: Number(document.getElementById("f_amount").value || 0),
     unit: document.getElementById("f_unit").value,
     quantity: document.getElementById("f_quantity").value,
