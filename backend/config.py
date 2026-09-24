@@ -13,7 +13,12 @@ DB_PATH = DATA_DIR / "app.db"
 BAIDU_API_KEY = os.getenv("BAIDU_API_KEY", "")
 BAIDU_SECRET_KEY = os.getenv("BAIDU_SECRET_KEY", "")
 BAIDU_TOKEN_URL = "https://aip.baidubce.com/oauth/2.0/token"
-BAIDU_OCR_URL = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic"
+# 依次尝试：高精度版 -> 标准版。用户领了哪种免费额度都能用，避免"无权限"报错
+BAIDU_OCR_URLS = [
+    "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic",  # 通用文字识别（高精度版）
+    "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic",   # 通用文字识别（标准版）
+]
+BAIDU_OCR_URL = BAIDU_OCR_URLS[0]  # 兼容旧引用
 
 # 持久化存储：默认存进用户本人 GitHub 仓库里的账本文件（永久在、归用户、可导出）
 # 不填则退回本地 SQLite（仅本机、会随服务清空，仅用于本地调试）

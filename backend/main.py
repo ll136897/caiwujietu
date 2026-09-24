@@ -40,6 +40,18 @@ def api_config():
     return {"write_token": WRITE_TOKEN}
 
 
+@app.get("/api/health")
+def api_health():
+    """自检：账本存储通不通 + 识别引擎配没配（看板顶部状态条用）"""
+    from .config import BAIDU_API_KEY, BAIDU_SECRET_KEY, GITHUB_REPO
+    st = store.storage_check()
+    return {
+        "storage": st,
+        "ocr_configured": bool(BAIDU_API_KEY and BAIDU_SECRET_KEY),
+        "repo": GITHUB_REPO,
+    }
+
+
 @app.get("/")
 def index():
     return FileResponse(str(STATIC / "index.html"))
@@ -95,6 +107,61 @@ async def api_add_entry(req: Request):
 @app.get("/api/entries")
 def api_list():
     return store.list_entries()
+
+
+@app.patch("/api/entries/{eid}")
+async def api_update(eid: int, req: Request):
+    _check_token(req)
+    body = await req.json()
+    return store.update_entry(eid, body)
+
+
+@app.delete("/api/entries/{eid}")
+async def api_delete(eid: int, req: Request):
+    _check_token(req)
+    ok = store.delete_entry(eid)
+    return {"ok": ok}
+
+
+@app.post("/api/capture")
+async def api_capture(req: Request, file: UploadFile = File(None)):
+    """快捷指令专用：截屏 → 识别 → 自动进账，一次请求完成。"""
+    _check_token(req)
+    data = None
+    ct = req.headers.get("content-type", "")
+    if "multipart" in ct or "form" in ct:
+        form = await req.form()
+        src = file if file else next((v for v in form.values() if hasattr(v, "read")), None)
+        if src is not None:
+            data = await src.read()
+    if not data:
+        raw = await req.body()
+        if raw:
+            try:
+                j = json.loads(raw)
+                if j.get("image_base64"):
+                    import base64
+                    data = base64.b64decode(j["image_base64"])
+            except Exception:
+                pass
+    if not data:
+        raise HTTPException(status_code=400, detail="需要图片")
+    text = ocr_image_bytes(data)
+    suggestion = parse_text(text)
+    entry = {
+        "amount": float(suggestion.get("amount", 0) or 0),
+        "type": suggestion.get("type", "收入"),
+        "category": suggestion.get("category", ""),
+        "merchant": suggestion.get("merchant", ""),
+        "project": suggestion.get("project", "其他"),
+        "date": suggestion.get("date", "") or datetime.date.today().isoformat(),
+        "unit": suggestion.get("unit", ""),
+        "quantity": suggestion.get("quantity", ""),
+        "note": suggestion.get("note", ""),
+        "img_hash": suggestion.get("img_hash", ""),
+    }
+    saved = store.add_entry(entry)
+    return {"ok": True, "entry": saved, "suggestion": suggestion}
 
 
 @app.get("/api/reports/daily")

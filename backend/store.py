@@ -18,7 +18,7 @@ def _use_github() -> bool:
 # ---------------- SQLite 兜底 ----------------
 def _sqlite_add(entry: dict):
     conn = get_conn()
-    conn.execute(
+    cur = conn.execute(
         """INSERT INTO entries (ts, amount, type, category, merchant, project, date, note, unit, quantity, img_hash, created_at)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
@@ -36,8 +36,10 @@ def _sqlite_add(entry: dict):
             datetime.datetime.now().isoformat(),
         ),
     )
+    row = dict(conn.execute("SELECT * FROM entries WHERE id=?", (cur.lastrowid,)).fetchone())
     conn.commit()
     conn.close()
+    return row
 
 
 def _sqlite_list() -> list:
@@ -94,6 +96,54 @@ def _github_list() -> list:
     return entries
 
 
+def _github_update(eid, fields: dict) -> dict:
+    entries, sha = _gh_get()
+    for e in entries:
+        if e.get("id") == eid:
+            for k in ("amount", "type", "category", "merchant", "project", "date", "unit", "quantity", "note"):
+                if k in fields:
+                    e[k] = fields[k]
+            _gh_put(entries, sha)
+            return e
+    raise KeyError("not found")
+
+
+def _github_delete(eid) -> bool:
+    entries, sha = _gh_get()
+    new = [e for e in entries if e.get("id") != eid]
+    if len(new) == len(entries):
+        return False
+    _gh_put(new, sha)
+    return True
+
+
+def _sqlite_update(eid, fields: dict) -> dict:
+    cols = []
+    vals = []
+    for k in ("amount", "type", "category", "merchant", "project", "date", "unit", "quantity", "note"):
+        if k in fields:
+            cols.append(f"{k}=?")
+            val = fields[k]
+            if k == "amount":
+                val = float(val or 0)
+            vals.append(val)
+    conn = get_conn()
+    conn.execute("UPDATE entries SET " + ", ".join(cols) + " WHERE id=?", vals + [eid])
+    conn.commit()
+    row = dict(conn.execute("SELECT * FROM entries WHERE id=?", (eid,)).fetchone())
+    conn.close()
+    return row
+
+
+def _sqlite_delete(eid) -> bool:
+    conn = get_conn()
+    cur = conn.execute("DELETE FROM entries WHERE id=?", (eid,))
+    conn.commit()
+    ok = cur.rowcount > 0
+    conn.close()
+    return ok
+
+
 # ---------------- 对外 API ----------------
 def add_entry(entry: dict) -> dict:
     if _use_github():
@@ -105,3 +155,38 @@ def list_entries() -> list:
     if _use_github():
         return _github_list()
     return _sqlite_list()
+
+
+def update_entry(eid, fields: dict) -> dict:
+    if _use_github():
+        return _github_update(eid, fields)
+    return _sqlite_update(eid, fields)
+
+
+def delete_entry(eid) -> bool:
+    if _use_github():
+        return _github_delete(eid)
+    return _sqlite_delete(eid)
+
+
+def storage_check() -> dict:
+    """自检：账本存哪、通不通（给非技术用户看"填对了没"）"""
+    if not _use_github():
+        return {
+            "mode": "sqlite",
+            "ok": False,
+            "detail": "还没接上你的 GitHub：账本暂存在服务器上，重启会丢。请填 GITHUB_REPO 和 GITHUB_TOKEN。",
+        }
+    try:
+        entries, _ = _gh_get()
+        return {
+            "mode": "github",
+            "ok": True,
+            "detail": f"账本已永久存入 {GITHUB_REPO}/{LEDGER_PATH}，当前 {len(entries)} 笔。",
+        }
+    except Exception as e:
+        return {
+            "mode": "github",
+            "ok": False,
+            "detail": f"连不上 GitHub（检查仓库名格式 用户名/仓库名、令牌权限）：{e}",
+        }

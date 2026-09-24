@@ -45,3 +45,17 @@ td.amt { text-align: right; font-variant-numeric: tabular-nums; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px 0; }
 .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); margin-right: 4px; }
+.row-edit { background: var(--panel-2); color: var(--accent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 12px; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+.modal[hidden] { display: none; }
+.modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; width: 100%; max-width: 420px; max-height: 88vh; overflow: auto; }
+.modal-card h3 { margin: 0 0 12px; font-size: 16px; }
+.modal-card label { display: block; font-size: 12px; color: var(--muted); margin: 9px 0 3px; }
+.modal-card input, .modal-card select { width: 100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; color: var(--text); padding: 9px; font-size: 14px; }
+.modal-btns { display: flex; gap: 8px; margin-top: 16px; }
+.modal-btns .btn { flex: 1; }
+.btn.danger { background: transparent; border-color: var(--income); color: var(--income); }
+.health { margin: 10px 0 4px; }
+.hrow { font-size: 12px; line-height: 1.5; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); margin-bottom: 6px; }
+.hrow.ok { color: var(--muted); border-color: var(--line); }
+.hrow.bad { color: var(--income); border-color: var(--income); }

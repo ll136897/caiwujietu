@@ -36,23 +36,30 @@ def _get_token():
 
 
 def ocr_image_bytes(image_bytes: bytes) -> str:
-    """返回 OCR 识别出的原始文本（换行分隔）。无 Key 时回退 mock。"""
+    """返回 OCR 识别出的原始文本（换行分隔）。无 Key / 调用失败时回退 mock。"""
     token = _get_token()
     if not token:
         return _mock_text()
-    try:
-        b64 = base64.b64encode(image_bytes).decode()
-        r = requests.post(
-            BAIDU_OCR_URL,
-            data={"access_token": token, "image": b64},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            timeout=15,
-        )
-        data = r.json()
-        words = [w["words"] for w in data.get("words_result", [])]
-        return "\n".join(words)
-    except Exception:
-        return _mock_text()
+    b64 = base64.b64encode(image_bytes).decode()
+    # 高精度版 -> 标准版 依次尝试；哪个有权限用哪个
+    for url in BAIDU_OCR_URLS:
+        try:
+            r = requests.post(
+                url,
+                data={"access_token": token, "image": b64},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=15,
+            )
+            data = r.json()
+            if data.get("error_code"):
+                # 如 6=无权限（未领取该接口免费额度），换下一个接口再试
+                continue
+            words = [w["words"] for w in data.get("words_result", [])]
+            if words:
+                return "\n".join(words)
+        except Exception:
+            continue
+    return _mock_text()
 
 
 def _mock_text():
