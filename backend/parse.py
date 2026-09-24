@@ -314,6 +314,36 @@ def _extract_time(text: str) -> str:
     return ""
 
 
+_SKIP_ROWS = ["客户", "编号", "单据", "日期", "收款", "电话", "地址", "备注", "制单", "送货"]
+
+
+def _extract_items_from_table(text: str) -> list:
+    """表格单据里把商品名一行行抓出来（"鸡中宝 2 38 76" → 鸡中宝）。
+    取每行第一个"非数字"的词，遇到合计/总计就停。"""
+    items = []
+    for line in _lines(text):
+        if any(k in line for k in ["合计", "总计", "小计"]):
+            break
+        if any(k in line for k in _SKIP_ROWS):
+            continue
+        toks = [t for t in re.split(r"[\s　|]+", line) if t]
+        if len(toks) < 2:
+            continue
+        if not any(re.search(r"\d", t) for t in toks):     # 数据行总得有数字（数量/单价/金额）
+            continue
+        m = re.match(r"^([\u4e00-\u9fa5A-Za-z]+)", toks[0])
+        name = m.group(1) if m else ""
+        if len(name) < 2:
+            continue
+        if any(h in name for h in ["品名", "单位", "数量", "单价", "金额", "规格", "序号", "货物"]):
+            continue
+        if name not in items:
+            items.append(name)
+        if len(items) >= 6:
+            break
+    return items
+
+
 def parse_text(text: str) -> dict:
     """把 OCR 文本结构化为一条记账建议（自动入库，不弹窗；存入后可在看板/上传页改）。"""
     ttype = _detect_type(text)
@@ -321,6 +351,11 @@ def parse_text(text: str) -> dict:
     channel = _detect_channel(text)
     merchant = _extract_merchant(text)
     item = _extract_item(text, channel, merchant) or merchant
+    # 表格/单据类：把上面的商品名一行行抓出来合并（"鸡中宝、牛三线肉、猪脚"），用户再改
+    if _looks_like_table(text) or _looks_like_bill(text):
+        names = _extract_items_from_table(text)
+        if names:
+            item = "、".join(names[:5]) + ("…" if len(names) > 5 else "")
     amount = round(_extract_amount(text), 2)
     return {
         "amount": amount,
