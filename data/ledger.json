@@ -16,6 +16,23 @@
       "time": "",
       "id": 1,
       "created_at": "2026-09-24T10:54:20.713122"
+    },
+    {
+      "amount": 0.0,
+      "type": "收入",
+      "category": "其他收入",
+      "merchant": "孙梦",
+      "project": "烤肉店",
+      "date": "2026-09-11",
+      "unit": "块",
+      "quantity": "1",
+      "note": "",
+      "img_hash": "",
+      "channel": "",
+      "item": "单位",
+      "time": "00:00",
+      "id": 2,
+      "created_at": "2026-09-24T10:55:00.498552"
     }
   ]
 }
