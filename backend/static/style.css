@@ -59,3 +59,27 @@ td.amt { text-align: right; font-variant-numeric: tabular-nums; }
 .hrow { font-size: 12px; line-height: 1.5; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); margin-bottom: 6px; }
 .hrow.ok { color: var(--muted); border-color: var(--line); }
 .hrow.bad { color: var(--income); border-color: var(--income); }
+
+/* ---------- 首页「拍一张，自动记账」 ---------- */
+.capture { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 12px 0; }
+.cap-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.cap-t { color: var(--muted); font-size: 12px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); font-size: 12px; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.cap-btns { display: flex; gap: 10px; }
+.status { margin-top: 10px; font-size: 13px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; line-height: 1.5; }
+.status.bad { color: var(--income); border-color: var(--income); }
+.status.ok { color: var(--expense); border-color: var(--expense); }
+.r-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-top: 10px; }
+.r-card .amt { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+.r-card .amt.pos { color: var(--income); }
+.r-card .amt.neg { color: var(--expense); }
+.row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.row label { width: 42px; color: var(--muted); font-size: 12px; flex: none; }
+.row input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; color: var(--text); padding: 8px 10px; font-size: 14px; }
+.r-btns { display: flex; gap: 8px; margin-top: 10px; }
+.thumb { width: 100%; max-height: 190px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--line); }
+details.raw { margin-top: 8px; color: var(--muted); font-size: 12px; }
+details.raw summary { cursor: pointer; padding: 3px 0; }
+details.raw pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 9px; color: var(--text); font-size: 11px; max-height: 160px; overflow: auto; margin: 6px 0 0; }

@@ -40,7 +40,23 @@ async function renderHealth() {
   const ocrLine = h.ocr_configured
     ? `<div class="hrow ok">✅ 截图识别：已开启（截屏后自动认金额）</div>`
     : `<div class="hrow bad">⚠️ 截图识别：未开启（截屏存进来但金额认不出，需在网页里手动改）</div>`;
-  box.innerHTML = storeLine + ocrLine;
+  const probeLine = st.mode === "github"
+    ? `<div class="hrow ok" id="probeWrite" style="cursor:pointer">🔍 点这里测「账本能不能写进去」（排错用）</div>`
+    : "";
+  box.innerHTML = storeLine + ocrLine + probeLine;
+  const pb = document.getElementById("probeWrite");
+  if (pb) pb.onclick = async () => {
+    pb.textContent = "正在往你的仓库写一个测试文件…";
+    try {
+      const h2 = await api("/api/health?write=1");
+      const w = (h2.storage && h2.storage.write) || {};
+      pb.className = "hrow " + (w.ok ? "ok" : "bad");
+      pb.textContent = (w.ok ? "✅ " : "⚠️ ") + (w.detail || "未知结果");
+    } catch (e) {
+      pb.className = "hrow bad";
+      pb.textContent = "⚠️ 测不了：" + e.message;
+    }
+  };
 }
 
 async function loadRange() {

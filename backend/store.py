@@ -81,7 +81,15 @@ def _gh_put(entries: list, sha):
         body["sha"] = sha
     url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{LEDGER_PATH}"
     r = requests.put(url, headers=_gh_headers(), json=body, timeout=20)
-    r.raise_for_status()
+    if not r.ok:
+        hint = ""
+        if r.status_code in (401, 403):
+            hint = "｜GITHUB_TOKEN 没有写入权限：到 GitHub 令牌设置把 Contents 改成 Read and write"
+        elif r.status_code == 404:
+            hint = "｜仓库名或 LEDGER_PATH 不对，或令牌没给这个仓库权限"
+        elif r.status_code == 409:
+            hint = "｜账本刚被改过，重试一次即可"
+        raise RuntimeError(f"写账本到 GitHub 失败 {r.status_code}{hint}：{r.text[:140]}")
 
 
 def _github_add(entry: dict) -> dict:
@@ -172,8 +180,32 @@ def delete_entry(eid) -> bool:
     return _sqlite_delete(eid)
 
 
-def storage_check() -> dict:
-    """自检：账本存哪、通不通（给非技术用户看"填对了没"）"""
+def write_probe() -> dict:
+    """真正写一次 GitHub（写一个探针文件再删掉），用来确认令牌有没有写入权限。
+    读取成功不代表能写——这是"拍照报错"最常见的根因。"""
+    if not _use_github():
+        return {"ok": False, "detail": "没接 GitHub，当前写的是服务器本地（重启会丢）"}
+    path = "data/.write_probe.json"
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{path}"
+    try:
+        content = base64.b64encode(b'{"probe": true}').decode("ascii")
+        r = requests.put(url, headers=_gh_headers(),
+                         json={"message": "写入自检（可忽略）", "content": content}, timeout=20)
+        if r.status_code not in (200, 201):
+            hint = "令牌没有写入权限：到 GitHub → 令牌设置，把 Contents 改成 Read and write" if r.status_code in (401, 403) else r.text[:120]
+            return {"ok": False, "detail": f"写入失败 {r.status_code}：{hint}"}
+        sha = r.json().get("content", {}).get("sha")
+        if sha:
+            requests.delete(url, headers=_gh_headers(),
+                            json={"message": "清理自检文件", "sha": sha}, timeout=20)
+        return {"ok": True, "detail": "写入正常：账本能存进你的 GitHub 仓库"}
+    except Exception as e:
+        return {"ok": False, "detail": f"连不上 GitHub：{type(e).__name__}: {e}"}
+
+
+def storage_check(write=False) -> dict:
+    """自检：账本存哪、通不通（给非技术用户看"填对了没"）。
+    write=True 时额外真写一次，验证是否有写入权限。"""
     if not _use_github():
         return {
             "mode": "sqlite",
@@ -182,11 +214,17 @@ def storage_check() -> dict:
         }
     try:
         entries, _ = _gh_get()
-        return {
+        st = {
             "mode": "github",
             "ok": True,
             "detail": f"账本已永久存入 {GITHUB_REPO}/{LEDGER_PATH}，当前 {len(entries)} 笔。",
         }
+        if write:
+            st["write"] = write_probe()
+            if not st["write"]["ok"]:
+                st["ok"] = False
+                st["detail"] = st["write"]["detail"]
+        return st
     except Exception as e:
         return {
             "mode": "github",

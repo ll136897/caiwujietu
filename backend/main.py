@@ -41,10 +41,11 @@ def api_config():
 
 
 @app.get("/api/health")
-def api_health():
-    """自检：账本存储通不通 + 识别引擎配没配（看板顶部状态条用）"""
+def api_health(write: int = 0):
+    """自检：账本存储通不通 + 识别引擎配没配（看板顶部状态条用）。
+    ?write=1 会真的往 GitHub 写一次再删掉，用来确认令牌有没有写入权限。"""
     from .config import BAIDU_API_KEY, BAIDU_SECRET_KEY, GITHUB_REPO
-    st = store.storage_check()
+    st = store.storage_check(write=bool(write))
     return {
         "storage": st,
         "ocr_configured": bool(BAIDU_API_KEY and BAIDU_SECRET_KEY),
@@ -134,8 +135,18 @@ async def api_delete(eid: int, req: Request):
 
 @app.post("/api/capture")
 async def api_capture(req: Request, file: UploadFile = File(None)):
-    """快捷指令专用：截屏 → 识别 → 自动进账，一次请求完成。"""
+    """快捷指令 / 手机上传页专用：图片 → 识别 → 自动进账，一次请求完成。"""
     _check_token(req)
+    try:
+        return await _capture_impl(req, file)
+    except HTTPException:
+        raise
+    except Exception as e:
+        # 用户看不到服务器日志，所以把原因原样回给页面显示
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
+
+
+async def _capture_impl(req: Request, file):
     data = None
     ct = req.headers.get("content-type", "")
     if "multipart" in ct or "form" in ct:

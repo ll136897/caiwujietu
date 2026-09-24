@@ -3,83 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>拍图记账</title>
-  <style>
-    :root{
-      --bg:#0f1116; --card:#181b22; --line:#2a2f3a; --txt:#e6e8ee; --muted:#8b93a7;
-      --pos:#ef4444; --neg:#22c55e; --blue:#60a5fa;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--txt);
-      font:15px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-      padding:16px 14px 48px;}
-    .wrap{max-width:640px;margin:0 auto}
-    h1{font-size:20px;margin:10px 0 6px}
-    .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
-    a.back{color:var(--blue);text-decoration:none;font-size:14px}
-    .bigbtn{display:block;width:100%;padding:16px;font-size:17px;font-weight:600;
-      border:0;border-radius:14px;background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;margin-bottom:12px}
-    .bigbtn.ghost{background:var(--card);border:1px solid var(--line);color:var(--txt)}
-    .bigbtn:active{opacity:.8}
-    .status{padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line);
-      color:var(--muted);font-size:14px;margin-bottom:14px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
-    .card .amt{font-size:30px;font-weight:700;margin-bottom:12px}
-    .card .amt.pos{color:var(--pos)}
-    .card .amt.neg{color:var(--neg)}
-    .row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    .row label{width:44px;color:var(--muted);font-size:13px;flex:none}
-    .row input{flex:1;background:#0f1319;border:1px solid var(--line);border-radius:10px;
-      color:var(--txt);padding:9px 10px;font-size:15px;min-width:0}
-    .thumb{width:100%;border-radius:12px;margin-bottom:12px;display:block;border:1px solid var(--line)}
-    .cardbtns{display:flex;gap:10px;margin-top:12px}
-    .cardbtns button{flex:1;padding:11px;border-radius:11px;border:1px solid var(--line);
-      background:#0f1319;color:var(--txt);font-size:15px}
-    .cardbtns .save{background:linear-gradient(180deg,#22c55e,#16a34a);border:0;color:#fff;font-weight:600}
-    .cardbtns .del{color:#f87171}
-    details{margin-top:10px;color:var(--muted);font-size:12px}
-    summary{cursor:pointer;padding:4px 0}
-    pre{white-space:pre-wrap;background:#0f1319;border:1px solid var(--line);border-radius:10px;
-      padding:10px;color:var(--txt);font-size:12px;max-height:200px;overflow:auto;margin:8px 0 0}
-    .tip{color:var(--muted);font-size:12px;text-align:center;margin-top:22px;line-height:1.8}
-    .ok{color:var(--neg)}
-    .bad{color:#f87171}
-    .proj{margin-bottom:14px}
-    .projt{color:var(--muted);font-size:13px}
-    .chips{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-    .chip{padding:8px 14px;border-radius:999px;border:1px solid var(--line);
-      background:#0f1319;color:var(--muted);font-size:14px}
-    .chip.on{background:linear-gradient(180deg,#3b82f6,#2563eb);border-color:transparent;color:#fff;font-weight:600}
-  </style>
+  <title>拍一张，自动记账</title>
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="wrap">
-    <a class="back" href="/">← 返回看板</a>
-    <h1>拍图 / 传图 记账</h1>
-    <div class="sub">拍一张付款截图或进货小票，自动认出：渠道 · 时间 · 类别 · 名称 · 数量 · 金额</div>
+    <a href="/" style="color:var(--accent);text-decoration:none;font-size:14px">← 返回看板</a>
+    <header>
+      <h1>拍一张，自动记账</h1>
+      <div class="sub">自动认出：渠道 · 时间 · 类别 · 名称 · 数量 · 金额</div>
+    </header>
 
-    <div class="proj">
-      <span class="projt">这笔归到：</span>
-      <div class="chips" id="projChips">
-        <button class="chip" data-p="烤肉店">烤肉店</button>
-        <button class="chip" data-p="课程">课程</button>
-        <button class="chip" data-p="骑行">骑行</button>
-        <button class="chip" data-p="其他">其他</button>
+    <div class="capture">
+      <div class="cap-head">
+        <span class="cap-t">这笔归到：</span>
+        <div class="chips" id="projChips">
+          <button class="chip" data-p="烤肉店">烤肉店</button>
+          <button class="chip" data-p="课程">课程</button>
+          <button class="chip" data-p="骑行">骑行</button>
+          <button class="chip" data-p="其他">其他</button>
+        </div>
       </div>
+      <div class="cap-btns">
+        <button class="btn primary" id="btnCam">📷 拍照</button>
+        <button class="btn" id="btnPick">🖼 相册（可多选）</button>
+      </div>
+      <input id="fCam" type="file" accept="image/*" capture="environment" hidden />
+      <input id="fPick" type="file" accept="image/*" multiple hidden />
+      <div id="status" class="status" hidden></div>
+      <div id="results"></div>
     </div>
 
-    <button class="bigbtn" id="btnCam">📷 拍照</button>
-    <button class="bigbtn ghost" id="btnPick">🖼 从相册选（可多选）</button>
-    <input id="fCam" type="file" accept="image/*" capture="environment" hidden />
-    <input id="fPick" type="file" accept="image/*" multiple hidden />
-
-    <div id="status" class="status" hidden></div>
-    <div id="results"></div>
-
-    <div class="tip">
-      认错了不用重传 —— 结果下面直接改，改完点「保存修改」。<br />
-      很久没用时服务会睡着，第一次要 30–60 秒才醒，属正常。
-    </div>
+    <div class="empty">认错了不用重传 —— 结果里直接改，改完点「保存修改」。</div>
   </div>
   <script src="/static/upload.js"></script>
 </body>

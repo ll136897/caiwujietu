@@ -16,8 +16,24 @@
 
     <div class="health" id="health"></div>
 
-    <div class="btns" style="margin-bottom:14px">
-      <a class="btn primary" href="/upload">📷 拍图 / 传图 记账</a>
+    <div class="capture">
+      <div class="cap-head">
+        <span class="cap-t">拍一张 / 选一张，自动记账</span>
+        <div class="chips" id="projChips">
+          <button class="chip" data-p="烤肉店">烤肉店</button>
+          <button class="chip" data-p="课程">课程</button>
+          <button class="chip" data-p="骑行">骑行</button>
+          <button class="chip" data-p="其他">其他</button>
+        </div>
+      </div>
+      <div class="cap-btns">
+        <button class="btn primary" id="btnCam">📷 拍照</button>
+        <button class="btn" id="btnPick">🖼 相册（可多选）</button>
+      </div>
+      <input id="fCam" type="file" accept="image/*" capture="environment" hidden />
+      <input id="fPick" type="file" accept="image/*" multiple hidden />
+      <div id="status" class="status" hidden></div>
+      <div id="results"></div>
     </div>
 
     <div class="cards" id="cards"></div>
@@ -85,5 +101,6 @@
     </div>
   </div>
   <script src="/static/app.js"></script>
+  <script src="/static/upload.js"></script>
 </body>
 </html>
