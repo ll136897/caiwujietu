@@ -83,3 +83,11 @@ td.amt { text-align: right; font-variant-numeric: tabular-nums; }
 details.raw { margin-top: 8px; color: var(--muted); font-size: 12px; }
 details.raw summary { cursor: pointer; padding: 3px 0; }
 details.raw pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 9px; color: var(--text); font-size: 11px; max-height: 160px; overflow: auto; margin: 6px 0 0; }
+
+/* ---------- 手动记账（一行一笔） ---------- */
+.m-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
+.m-head { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+.m-head .del { color: var(--income); cursor: pointer; padding: 2px 4px; }
+details.more { margin-top: 8px; color: var(--muted); font-size: 12px; }
+details.more summary { cursor: pointer; padding: 4px 0; }
+textarea { width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 9px 10px; font-size: 14px; font-family: inherit; margin-top: 8px; }

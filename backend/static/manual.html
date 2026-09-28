@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>手动记账</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <a href="/" style="color:var(--accent);text-decoration:none;font-size:14px">← 返回看板</a>
+    <header>
+      <h1>手动记账</h1>
+      <div class="sub">一行一笔，填多少都行，最后一次保存</div>
+    </header>
+
+    <div class="capture">
+      <div class="cap-head">
+        <span class="cap-t">这些记到：</span>
+        <div class="chips" id="projChips">
+          <button class="chip" data-p="烤肉店">烤肉店</button>
+          <button class="chip" data-p="课程">课程</button>
+          <button class="chip" data-p="骑行">骑行</button>
+          <button class="chip" data-p="其他">其他</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="rows"></div>
+
+    <button class="btn" id="addRow" style="margin:10px 0">+ 再加一笔</button>
+
+    <div class="capture">
+      <div class="cap-head" style="margin-bottom:0">
+        <span class="cap-t">合计</span>
+        <span class="cap-t" style="font-size:16px;color:var(--text);font-weight:700"><span id="sum">¥0.00</span> · <span id="cnt">0</span> 笔</span>
+      </div>
+      <div class="cap-btns" style="margin-top:12px">
+        <button class="btn primary" id="saveAll">保存全部</button>
+      </div>
+      <div id="status" class="status" hidden></div>
+    </div>
+
+    <details class="raw" style="margin-top:14px">
+      <summary>📋 批量粘贴（一行一笔：名称 金额）</summary>
+      <textarea id="bulk" rows="5" placeholder="鸡中宝 76&#10;牛三线肉 165&#10;猪脚 48"></textarea>
+      <button class="btn" id="bulkBtn" style="margin-top:8px">解析成上面的表格</button>
+    </details>
+
+    <details class="raw" style="margin-top:10px">
+      <summary>🍢 我的常用名称（点一下就填进表格）</summary>
+      <div class="chips" id="menuList"></div>
+      <div class="empty" id="menuEmpty">还没有。保存一次就会自动记住</div>
+    </details>
+  </div>
+  <script src="/static/manual.js"></script>
+</body>
+</html>

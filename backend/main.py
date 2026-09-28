@@ -64,6 +64,12 @@ def upload_page():
     return FileResponse(str(STATIC / "upload.html"))
 
 
+@app.get("/manual")
+def manual_page():
+    """手动记账页：手机上一行一笔，可批量粘贴，常用名称自动记住当菜单"""
+    return FileResponse(str(STATIC / "manual.html"))
+
+
 @app.post("/api/ocr")
 async def api_ocr(req: Request, file: UploadFile = File(None)):
     _check_token(req)
